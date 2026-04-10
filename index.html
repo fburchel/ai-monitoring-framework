@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Monitoring Framework — ThousandEyes</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --te-blue: #049FD9;
+  --te-blue-dim: rgba(4,159,217,0.15);
+  --te-blue-glow: rgba(4,159,217,0.4);
+  --te-dark: #060E1A;
+  --te-panel: #0B1A2E;
+  --te-card: #0F2340;
+  --te-card-hover: #132B4F;
+  --te-border: rgba(4,159,217,0.2);
+  --te-border-bright: rgba(4,159,217,0.5);
+  --white: #FFFFFF;
+  --gray-100: #E8ECF1;
+  --gray-300: #8FA0B5;
+  --gray-500: #5A6B7F;
+  --accent-green: #00B87C;
+  --accent-red: #E8364F;
+  --accent-orange: #F5A623;
+  --accent-purple: #7B61FF;
+  --accent-cyan: #00F0FF;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--te-dark);
+  color: var(--gray-100);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── Animated Background ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background:
+    linear-gradient(rgba(4,159,217,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(4,159,217,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb-1 { width: 600px; height: 600px; top: -200px; right: -100px; background: rgba(4,159,217,0.08); animation: float 20s ease-in-out infinite; }
+.orb-2 { width: 400px; height: 400px; bottom: -100px; left: -100px; background: rgba(123,97,255,0.06); animation: float 25s ease-in-out infinite reverse; }
+.orb-3 { width: 300px; height: 300px; top: 50%; left: 50%; background: rgba(0,184,124,0.04); animation: float 18s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -30px); }
+  66% { transform: translate(-20px, 20px); }
+}
+
+/* ── Top Nav ── */
+.topnav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(6,14,26,0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--te-border);
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topnav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topnav-logo {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.topnav-logo svg {
+  width: 32px; height: 32px;
+}
+
+.topnav-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--white);
+  letter-spacing: -0.3px;
+}
+
+.topnav-subtitle {
+  font-size: 12px;
+  color: var(--gray-300);
+  margin-left: 4px;
+}
+
+/* ── Main Content ── */
+.main {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 88px 32px 60px;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: var(--te-blue-dim);
+  border: 1px solid var(--te-border);
+  color: var(--te-blue);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--white) 0%, var(--te-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 17px;
+  color: var(--gray-300);
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.hero-stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-top: 36px;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+}
+
+.hero-stat-label {
+  font-size: 12px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 4px;
+}
+
+/* ── Pattern Cards Grid ── */
+.patterns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 24px;
+  margin-bottom: 64px;
+}
+
+.pattern-card {
+  background: var(--te-panel);
+  border: 1px solid var(--te-border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+
+.pattern-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--card-accent, var(--te-blue)), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.pattern-card:hover {
+  border-color: var(--te-border-bright);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(4,159,217,0.12);
+}
+
+.pattern-card:hover::before { opacity: 1; }
+
+.pattern-card.expanded {
+  grid-column: 1 / -1;
+  border-color: var(--te-blue);
+  box-shadow: 0 0 60px rgba(4,159,217,0.15);
+}
+
+.pattern-card.expanded::before { opacity: 1; }
+
+/* Card Header */
+.card-header {
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.card-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-500);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.3px;
+}
+
+/* Card Body */
+.card-body {
+  padding: 16px 24px 24px;
+}
+
+.card-desc {
+  font-size: 13.5px;
+  color: var(--gray-300);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.card-usecases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.usecase-tag {
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 11px;
+  color: var(--gray-300);
+  font-weight: 500;
+}
+
+.card-expand-hint {
+  padding: 0 24px 16px;
+  font-size: 11px;
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-expand-hint .arrow {
+  transition: transform 0.3s;
+}
+
+.pattern-card.expanded .card-expand-hint .arrow {
+  transform: rotate(180deg);
+}
+
+/* ── Expanded Panel ── */
+.expanded-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+.pattern-card.expanded .expanded-panel {
+  max-height: 2000px;
+}
+
+.expanded-inner {
+  padding: 0 24px 32px;
+  border-top: 1px solid var(--te-border);
+  margin-top: 8px;
+  padding-top: 24px;
+}
+
+/* Architecture Diagram */
+.arch-diagram {
+  background: var(--te-dark);
+  border: 1px solid var(--te-border);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-diagram::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    linear-gradient(rgba(0,240,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,240,255,0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+
+.arch-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.arch-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.node-box {
+  width: 110px;
+  height: 60px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+  text-align: center;
+  line-height: 1.3;
+  position: relative;
+  border: 1px solid;
+}
+
+.node-box.app { background: rgba(4,159,217,0.12); border-color: rgba(4,159,217,0.4); }
+.node-box.llm { background: rgba(123,97,255,0.12); border-color: rgba(123,97,255,0.4); }
+.node-box.db { background: rgba(0,184,124,0.12); border-color: rgba(0,184,124,0.4); }
+.node-box.tool { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.4); }
+.node-box.agent { background: rgba(232,54,79,0.12); border-color: rgba(232,54,79,0.4); }
+.node-box.gpu { background: rgba(0,240,255,0.12); border-color: rgba(0,240,255,0.4); }
+
+.node-label {
+  font-size: 10px;
+  color: var(--gray-500);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Animated Arrow */
+.arch-arrow {
+  width: 60px;
+  height: 2px;
+  position: relative;
+  margin: 0 4px;
+  display: flex;
+  align-items: center;
+}
+
+.arch-arrow .line {
+  width: 100%;
+  height: 2px;
+  background: rgba(0,240,255,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-arrow .line::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -30px;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan));
+  animation: flowPulse 2s ease-in-out infinite;
+}
+
+@keyframes flowPulse {
+  0% { left: -30px; opacity: 0; }
+  30% { opacity: 1; }
+  100% { left: calc(100% + 30px); opacity: 0; }
+}
+
+.arch-arrow .dot {
+  position: absolute;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+/* TE Monitoring Overlay */
+.te-overlay {
+  position: absolute;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+  background: rgba(0,240,255,0.08);
+  border: 1px solid rgba(0,240,255,0.25);
+  white-space: nowrap;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; box-shadow: 0 0 12px rgba(0,240,255,0.2); }
+}
+
+/* Value Columns */
+.value-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.value-col {
+  background: var(--te-card);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--te-border);
+}
+
+.value-col-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.value-col-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.value-col-icon.cio { background: rgba(245,166,35,0.15); }
+.value-col-icon.arch { background: rgba(123,97,255,0.15); }
+
+.value-col-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.value-col p {
+  font-size: 13px;
+  color: var(--gray-300);
+  line-height: 1.65;
+}
+
+.value-col .highlight {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+/* TE Approach Box */
+.te-approach {
+  background: rgba(4,159,217,0.06);
+  border: 1px solid rgba(4,159,217,0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.te-approach-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--te-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.te-approach-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gray-100);
+  margin-bottom: 6px;
+}
+
+.te-approach-item .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--te-blue);
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+/* ── Monitoring Layers Table ── */
+.layers-section {
+  margin-bottom: 64px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-header h2 {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+
+.section-header p {
+  font-size: 15px;
+  color: var(--gray-300);
+}
+
+.layers-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.layers-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 0 16px 12px;
+}
+
+.layers-table td {
+  padding: 16px;
+  background: var(--te-panel);
+  font-size: 13px;
+  color: var(--gray-100);
+}
+
+.layers-table tr td:first-child {
+  border-radius: 10px 0 0 10px;
+  border-left: 3px solid var(--te-blue);
+}
+
+.layers-table tr td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.layer-name {
+  font-weight: 700;
+  color: var(--white);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.layer-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--te-blue-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--te-blue);
+  font-family: var(--font-mono);
+}
+
+.te-test-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(4,159,217,0.1);
+  border: 1px solid rgba(4,159,217,0.25);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--te-blue);
+  font-family: var(--font-mono);
+}
+
+.differentiator {
+  color: var(--accent-cyan);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+/* ── Interactive Mapper Section ── */
+.mapper-section {
+  margin-bottom: 64px;
+}
+
+.mapper-container {
+  background: var(--te-panel);
+  border: 1px solid var(--te-border);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.mapper-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.mapper-row:last-child { border-bottom: none; }
+
+.mapper-layer-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mapper-input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mapper-chip {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--te-border);
+  background: var(--te-card);
+  color: var(--gray-300);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-sans);
+}
+
+.mapper-chip:hover {
+  border-color: var(--te-blue);
+  color: var(--white);
+  background: rgba(4,159,217,0.08);
+}
+
+.mapper-chip.selected {
+  border-color: var(--te-blue);
+  background: var(--te-blue-dim);
+  color: var(--te-blue);
+  font-weight: 600;
+}
+
+.mapper-chip.custom-input {
+  border-style: dashed;
+  color: var(--gray-500);
+}
+
+.mapper-result {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.mapper-result .test-type {
+  display: block;
+  padding: 4px 0;
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 32px;
+  border-top: 1px solid var(--te-border);
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .patterns-grid { grid-template-columns: 1fr; }
+  .value-columns { grid-template-columns: 1fr; }
+  .mapper-row { grid-template-columns: 1fr; gap: 8px; }
+  .hero h1 { font-size: 28px; }
+  .hero-stat-row { gap: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Top Nav -->
+<nav class="topnav">
+  <div class="topnav-brand">
+    <span class="topnav-title">AI Agent Monitoring Framework</span>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">Monitoring Intelligence for AI Infrastructure</div>
+    <h1>Five Patterns of<br>Enterprise AI Deployments</h1>
+    <p>AI Agents do not contain intelligence they call for it across owned and unowned networks. ThousandEyes provides network path visibility, per-dependency isolation, and independent SLA verification across every AI architecture pattern.</p>
+    <div class="hero-stat-row">
+      <div class="hero-stat">
+        <div class="hero-stat-value">5</div>
+        <div class="hero-stat-label">Architecture Patterns</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">5</div>
+        <div class="hero-stat-label">Monitoring Layers</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">100%</div>
+        <div class="hero-stat-label">Path Visibility</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pattern Cards -->
+  <section class="patterns-grid" id="patternsGrid">
+
+    <!-- Pattern 1: Single LLM API Call -->
+    <div class="pattern-card" data-pattern="1" style="--card-accent: #049FD9;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-number">Pattern 01</div>
+          <div class="card-title">Single LLM API Call</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Application calls one LLM endpoint. Zero visibility into the provider's network path. When users report slowness — is it your code, your network, or the provider?</div>
+        <div class="card-usecases">
+          <span class="usecase-tag">Internal Chatbots</span>
+          <span class="usecase-tag">Doc Summarizers</span>
+          <span class="usecase-tag">Email Drafters</span>
+          <span class="usecase-tag">Code Gen</span>
+        </div>
+      </div>
+      <div class="card-expand-hint"><span class="arrow">&#x25BC;</span> Click to explore architecture &amp; monitoring approach</div>
+
+      <div class="expanded-panel">
+        <div class="expanded-inner">
+          <!-- Architecture Diagram -->
+          <div class="arch-diagram">
+            <div class="arch-flow">
+              <div class="arch-node">
+                <div class="node-box app">Application</div>
+                <div class="node-label">Your Code</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node" style="position:relative;">
+                <div class="node-box llm">LLM Endpoint</div>
+                <div class="node-label">OpenAI / Anthropic / Bedrock</div>
+                <div class="te-overlay" style="bottom: -28px; left: 50%; transform: translateX(-50%);">TE: HTTP Server + Path Viz</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node">
+                <div class="node-box app">Response</div>
+                <div class="node-label">Result</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TE Approach -->
+          <div class="te-approach">
+            <div class="te-approach-title">ThousandEyes Approach</div>
+            <div class="te-approach-item"><span class="dot"></span><span>HTTP Server Test to LLM endpoint from ThousandEyes Agents within customer's infrastructure</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Real-time availability, response time, network path visualization</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Detect regional degradation before provider's status page updates</span></div>
+          </div>
+
+          <!-- Value Columns -->
+          <div class="value-columns">
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon cio"></div>
+                <div class="value-col-title">CIO / Business Value</div>
+              </div>
+              <p><span class="highlight">Independent SLA verification</span> of provider compliance. Isolate internal vs. external performance issues. Reduce MTTR on AI feature degradation.</p>
+            </div>
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon arch"></div>
+                <div class="value-col-title">Architect / Technical Value</div>
+              </div>
+              <p><span class="highlight">Path visualization shows every hop</span> to the LLM endpoint. Identify which transit provider or peering point introduces latency. Correlate application latency with network delivery performance.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 2: RAG Pipeline -->
+    <div class="pattern-card" data-pattern="2" style="--card-accent: #7B61FF;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-number">Pattern 02</div>
+          <div class="card-title">RAG Pipeline</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Two external dependencies on the critical path: vector database retrieval and LLM inference. APM shows aggregate latency. ThousandEyes isolates which dependency is the bottleneck.</div>
+        <div class="card-usecases">
+          <span class="usecase-tag">Knowledge Base</span>
+          <span class="usecase-tag">Support Automation</span>
+          <span class="usecase-tag">Doc Retrieval</span>
+          <span class="usecase-tag">Contextual Summarization</span>
+        </div>
+      </div>
+      <div class="card-expand-hint"><span class="arrow">&#x25BC;</span> Click to explore architecture &amp; monitoring approach</div>
+
+      <div class="expanded-panel">
+        <div class="expanded-inner">
+          <div class="arch-diagram">
+            <div class="arch-flow">
+              <div class="arch-node">
+                <div class="node-box app">Application</div>
+                <div class="node-label">Your App</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node" style="position:relative;">
+                <div class="node-box db">Vector DB</div>
+                <div class="node-label">Pinecone / Weaviate</div>
+                <div class="te-overlay" style="bottom:-28px; left:50%; transform:translateX(-50%);">TE: HTTP Server</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node" style="position:relative;">
+                <div class="node-box llm">LLM Endpoint</div>
+                <div class="node-label">Inference</div>
+                <div class="te-overlay" style="bottom:-28px; left:50%; transform:translateX(-50%);">TE: HTTP Server + Path</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node">
+                <div class="node-box app">Response</div>
+                <div class="node-label">Result</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="te-approach">
+            <div class="te-approach-title">ThousandEyes Approach</div>
+            <div class="te-approach-item"><span class="dot"></span><span>HTTP Server test to vector DB API endpoint</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Separate HTTP Server test to LLM endpoint</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Measure retrieval vs. inference latency independently</span></div>
+          </div>
+
+          <div class="value-columns">
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon cio"></div>
+                <div class="value-col-title">CIO / Business Value</div>
+              </div>
+              <p><span class="highlight">Monitor two failure modes independently.</span> Prove which external dependency is bottlenecking. Negotiate SLA compliance with independent data.</p>
+            </div>
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon arch"></div>
+                <div class="value-col-title">Architect / Technical Value</div>
+              </div>
+              <p><span class="highlight">Two separate monitoring targets, independent network paths.</span> When retrieval takes 8s instead of 1, immediately know if it's provider API degradation or packet loss. Packet-level visibility no APM provides.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 3: Multi-Agent Orchestration -->
+    <div class="pattern-card" data-pattern="3" style="--card-accent: #00B87C;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-number">Pattern 03</div>
+          <div class="card-title">Multi-Agent Orchestration</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Multiple agents, potentially different models, different latency profiles. Agent A completes in 2s. Agent C takes 18s. Why? Need per-agent observability correlated with provider performance.</div>
+        <div class="card-usecases">
+          <span class="usecase-tag">Mission Control</span>
+          <span class="usecase-tag">CrewAI</span>
+          <span class="usecase-tag">LangGraph</span>
+          <span class="usecase-tag">Agent Pools</span>
+        </div>
+      </div>
+      <div class="card-expand-hint"><span class="arrow">&#x25BC;</span> Click to explore architecture &amp; monitoring approach</div>
+
+      <div class="expanded-panel">
+        <div class="expanded-inner">
+          <div class="arch-diagram">
+            <div class="arch-flow" style="flex-wrap: wrap; gap: 12px; justify-content: center;">
+              <div class="arch-node">
+                <div class="node-box app" style="width:130px;">Orchestrator</div>
+                <div class="node-label">Controller</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
+                <div class="arch-node">
+                  <div class="node-box agent" style="width:100px; height:44px; font-size:11px;">Agent A<br><span style="font-size:9px;opacity:0.7;">Model 1</span></div>
+                </div>
+                <div class="arch-node">
+                  <div class="node-box agent" style="width:100px; height:44px; font-size:11px;">Agent B<br><span style="font-size:9px;opacity:0.7;">Model 2</span></div>
+                </div>
+                <div class="arch-node">
+                  <div class="node-box agent" style="width:100px; height:44px; font-size:11px;">Agent C<br><span style="font-size:9px;opacity:0.7;">Model 3</span></div>
+                </div>
+                <div class="te-overlay" style="position:absolute; right:-160px; bottom:-32px;">TE: Transaction + HTTP Server</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node">
+                <div class="node-box llm">LLM<br>Providers</div>
+                <div class="node-label">Multi-Provider</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node">
+                <div class="node-box app">Aggregate<br>Results</div>
+                <div class="node-label">Output</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="te-approach">
+            <div class="te-approach-title">ThousandEyes Approach</div>
+            <div class="te-approach-item"><span class="dot"></span><span>Transaction test per agent type — measures entire orchestration E2E</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>HTTP Server test per distinct LLM provider/endpoint</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Correlate pipeline latency with individual provider performance</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Set SLAs per agent type (fast agents vs. heavy reasoning agents)</span></div>
+          </div>
+
+          <div class="value-columns">
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon cio"></div>
+                <div class="value-col-title">CIO / Business Value</div>
+              </div>
+              <p><span class="highlight">Visibility into complex AI workflows.</span> Prove reliability of multi-agent systems. Correlate customer experience degradation with specific external dependencies. Show which orchestration patterns are sustainable at scale.</p>
+            </div>
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon arch"></div>
+                <div class="value-col-title">Architect / Technical Value</div>
+              </div>
+              <p><span class="highlight">Per-agent monitoring with per-provider endpoint monitoring.</span> When orchestration degrades, isolate whether slowness is Agent A, Agent B, Provider X, or the network path to Provider X. That correlation is the differentiator.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 4: Tool-Using Agents -->
+    <div class="pattern-card" data-pattern="4" style="--card-accent: #F5A623;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-number">Pattern 04</div>
+          <div class="card-title">Tool-Using Agents (MCP / Function Calling)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Five to fifty external tool dependencies. Each tool is a separate network path. When an agent workflow fails, which tool failed? Was it the provider or the network?</div>
+        <div class="card-usecases">
+          <span class="usecase-tag">Salesforce Integration</span>
+          <span class="usecase-tag">Jira Automation</span>
+          <span class="usecase-tag">Multi-Tool MCP</span>
+          <span class="usecase-tag">External APIs</span>
+        </div>
+      </div>
+      <div class="card-expand-hint"><span class="arrow">&#x25BC;</span> Click to explore architecture &amp; monitoring approach</div>
+
+      <div class="expanded-panel">
+        <div class="expanded-inner">
+          <div class="arch-diagram">
+            <div class="arch-flow" style="flex-wrap: wrap; gap: 12px; justify-content: center;">
+              <div class="arch-node">
+                <div class="node-box agent" style="width:90px;">Agent</div>
+                <div class="node-label">Orchestrator</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node">
+                <div class="node-box llm" style="width:100px;">Model API</div>
+                <div class="node-label">Reasoning</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div style="display:flex; flex-direction:column; gap:6px; position:relative;">
+                <div class="node-box tool" style="width:100px; height:36px; font-size:11px;">Tool A <span style="font-size:9px;">SF</span></div>
+                <div class="node-box tool" style="width:100px; height:36px; font-size:11px;">Tool B <span style="font-size:9px;">Jira</span></div>
+                <div class="node-box tool" style="width:100px; height:36px; font-size:11px;">Tool C <span style="font-size:9px;">KB</span></div>
+                <div class="te-overlay" style="position:absolute; right:-170px; bottom:-32px;">TE: HTTP Server per tool</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node">
+                <div class="node-box app">Response</div>
+                <div class="node-label">Result</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="te-approach">
+            <div class="te-approach-title">ThousandEyes Approach</div>
+            <div class="te-approach-item"><span class="dot"></span><span>HTTP Server test per external tool endpoint (Salesforce, Jira, etc.)</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Monitor each tool independently to isolate failures</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Track tool invocation success rate and latency by tool type</span></div>
+          </div>
+
+          <div class="value-columns">
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon cio"></div>
+                <div class="value-col-title">CIO / Business Value</div>
+              </div>
+              <p><span class="highlight">Prove reliability of tool-using agents.</span> Demonstrate SLA compliance per tool integration. Show customers that tool failures are external, not your orchestration.</p>
+            </div>
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon arch"></div>
+                <div class="value-col-title">Architect / Technical Value</div>
+              </div>
+              <p><span class="highlight">Tool dependency map with independent monitoring per tool.</span> When an agent workflow fails, know immediately which tool failed and whether it's the provider or the network. No more finger-pointing between teams.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 5: Self-Hosted Inference -->
+    <div class="pattern-card" data-pattern="5" style="--card-accent: #E8364F;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-number">Pattern 05</div>
+          <div class="card-title">Self-Hosted Inference Endpoints</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Model is self-hosted but the network path between app tier and inference tier is critical. Latency spike: GPU saturation or network congestion? Traditional monitoring conflates both.</div>
+        <div class="card-usecases">
+          <span class="usecase-tag">Proprietary Models</span>
+          <span class="usecase-tag">Compliance/On-Prem</span>
+          <span class="usecase-tag">Cost-Optimized</span>
+          <span class="usecase-tag">Multi-Region Failover</span>
+        </div>
+      </div>
+      <div class="card-expand-hint"><span class="arrow">&#x25BC;</span> Click to explore architecture &amp; monitoring approach</div>
+
+      <div class="expanded-panel">
+        <div class="expanded-inner">
+          <div class="arch-diagram">
+            <div class="arch-flow">
+              <div class="arch-node">
+                <div class="node-box app">App Tier</div>
+                <div class="node-label">Application</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node" style="position:relative;">
+                <div class="node-box db" style="width: 130px;">Internal Network</div>
+                <div class="node-label">VPC / On-Prem</div>
+                <div class="te-overlay" style="bottom:-28px; left:50%; transform:translateX(-50%);">TE: Path Analysis</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node" style="position:relative;">
+                <div class="node-box gpu">GPU Inference</div>
+                <div class="node-label">SageMaker / vLLM / Vertex</div>
+                <div class="te-overlay" style="bottom:-28px; left:50%; transform:translateX(-50%);">TE: HTTP Server + Jitter</div>
+              </div>
+              <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+              <div class="arch-node">
+                <div class="node-box app">Response</div>
+                <div class="node-label">Result</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="te-approach">
+            <div class="te-approach-title">ThousandEyes Approach</div>
+            <div class="te-approach-item"><span class="dot"></span><span>Monitor internal network path (packet loss, latency, jitter)</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Correlate network path quality with inference latency</span></div>
+            <div class="te-approach-item"><span class="dot"></span><span>Detect multi-AZ or multi-region network issues</span></div>
+          </div>
+
+          <div class="value-columns">
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon cio"></div>
+                <div class="value-col-title">CIO / Business Value</div>
+              </div>
+              <p><span class="highlight">Prove self-hosted inference is reliable.</span> Monitor internal SLAs for inference performance. Isolate whether issues are compute or network — assign ownership instantly.</p>
+            </div>
+            <div class="value-col">
+              <div class="value-col-header">
+                <div class="value-col-icon arch"></div>
+                <div class="value-col-title">Architect / Technical Value</div>
+              </div>
+              <p><span class="highlight">Internal path visibility.</span> When inference latency spikes, correlate with packet loss or routing changes. Prove whether the problem is GPU saturation (compute team) or network congestion (network team). That isolation saves hours.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 5-Layer Monitoring Architecture -->
+  <section class="layers-section">
+    <div class="section-header">
+      <h2>The Complete Monitoring Architecture</h2>
+      <p>Five layers of visibility that APM tools cannot provide</p>
+    </div>
+
+    <table class="layers-table">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>What It Monitors</th>
+          <th>TE Test Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="layer-name"><span class="layer-num">1</span>Application Health</div></td>
+          <td>Is the app running? Endpoints responding?</td>
+          <td><span class="te-test-badge">HTTP Server → /health</span></td>
+        </tr>
+        <tr>
+          <td><div class="layer-name"><span class="layer-num">2</span>AI Provider Reachability</div></td>
+          <td>Can we reach OpenAI / Anthropic / Bedrock? What's the network path?</td>
+          <td><span class="te-test-badge">HTTP Server + Path Analysis</span></td>
+        </tr>
+        <tr>
+          <td><div class="layer-name"><span class="layer-num">3</span>Agent Pipeline</div></td>
+          <td>Are agents completing workflows within SLA?</td>
+          <td><span class="te-test-badge">Transaction per Agent Type</span></td>
+        </tr>
+        <tr>
+          <td><div class="layer-name"><span class="layer-num">4</span>Tool Dependencies</div></td>
+          <td>Can we reach each external tool? Which tool failed?</td>
+          <td><span class="te-test-badge">HTTP Server per Tool</span></td>
+        </tr>
+        <tr>
+          <td><div class="layer-name"><span class="layer-num">5</span>End-User Experience</div></td>
+          <td>What do actual users experience?</td>
+          <td><span class="te-test-badge">Endpoint Agent + Browser Txn</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Interactive Stack Mapper -->
+  <section class="mapper-section">
+    <div class="section-header">
+      <h2>Map Your AI Stack</h2>
+      <p>Select your components — see exactly which ThousandEyes tests you need</p>
+    </div>
+
+    <div class="mapper-container" id="stackMapper">
+
+      <!-- LLM Providers -->
+      <div class="mapper-row" data-layer="llm">
+        <div class="mapper-layer-label"><span class="layer-num">1</span> LLM Providers</div>
+        <div class="mapper-input-group">
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server + Path Viz">OpenAI</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server + Path Viz">Anthropic</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server + Path Viz">AWS Bedrock</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server + Path Viz">Azure OpenAI</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server + Internal Path">Self-Hosted (vLLM)</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server + Internal Path">SageMaker</button>
+        </div>
+        <div class="mapper-result" id="result-llm">—</div>
+      </div>
+
+      <!-- Vector DBs -->
+      <div class="mapper-row" data-layer="vectordb">
+        <div class="mapper-layer-label"><span class="layer-num">2</span> Vector / Data Store</div>
+        <div class="mapper-input-group">
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server to API">Pinecone</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server to API">Weaviate</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server">pgvector (self-hosted)</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server to API">ChromaDB Cloud</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server to API">Elasticsearch</button>
+          <button class="mapper-chip custom-input" onclick="toggleChip(this)" data-test="HTTP Server">+ Custom</button>
+        </div>
+        <div class="mapper-result" id="result-vectordb">—</div>
+      </div>
+
+      <!-- Orchestration -->
+      <div class="mapper-row" data-layer="orch">
+        <div class="mapper-layer-label"><span class="layer-num">3</span> Orchestration</div>
+        <div class="mapper-input-group">
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="Transaction Test E2E">LangGraph</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="Transaction Test E2E">CrewAI</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="Transaction Test E2E">AutoGen</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="Transaction Test E2E">Custom Multi-Agent</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server">Single Agent</button>
+        </div>
+        <div class="mapper-result" id="result-orch">—</div>
+      </div>
+
+      <!-- Tool Integrations -->
+      <div class="mapper-row" data-layer="tools">
+        <div class="mapper-layer-label"><span class="layer-num">4</span> Tool Integrations</div>
+        <div class="mapper-input-group">
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server">Salesforce</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server">Jira</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server">Slack</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server">ServiceNow</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server">GitHub</button>
+          <button class="mapper-chip custom-input" onclick="toggleChip(this)" data-test="HTTP Server">+ Custom</button>
+        </div>
+        <div class="mapper-result" id="result-tools">—</div>
+      </div>
+
+      <!-- End User -->
+      <div class="mapper-row" data-layer="enduser">
+        <div class="mapper-layer-label"><span class="layer-num">5</span> End-User Access</div>
+        <div class="mapper-input-group">
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="Endpoint Agent + Browser Txn">Web App (Browser)</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="Endpoint Agent">Desktop App</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="HTTP Server from Cloud Agents">API-Only</button>
+          <button class="mapper-chip" onclick="toggleChip(this)" data-test="Endpoint Agent + Browser Txn">Internal Portal</button>
+        </div>
+        <div class="mapper-result" id="result-enduser">—</div>
+      </div>
+
+    </div>
+
+    <!-- Summary Output -->
+    <div id="mapperSummary" style="margin-top: 24px; display:none;">
+      <div style="background: rgba(4,159,217,0.06); border: 1px solid rgba(4,159,217,0.25); border-radius: 12px; padding: 24px;">
+        <div style="font-size: 15px; font-weight: 700; color: var(--te-blue); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Your ThousandEyes Monitoring Plan</div>
+        <div id="summaryContent" style="font-family: var(--font-mono); font-size: 13px; color: var(--gray-100); line-height: 2;"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    ThousandEyes AI Agent Monitoring Framework
+  </footer>
+
+</div>
+
+<script>
+// ── Card Expand/Collapse ──
+function toggleCard(card) {
+  const wasExpanded = card.classList.contains('expanded');
+
+  // Collapse all
+  document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('expanded'));
+
+  // Toggle this one
+  if (!wasExpanded) {
+    card.classList.add('expanded');
+    setTimeout(() => {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+}
+
+// ── Stack Mapper ──
+function toggleChip(chip) {
+  chip.classList.toggle('selected');
+  updateMapperResults();
+}
+
+function updateMapperResults() {
+  const layers = ['llm', 'vectordb', 'orch', 'tools', 'enduser'];
+  let totalTests = new Set();
+  let hasSelections = false;
+
+  layers.forEach(layer => {
+    const row = document.querySelector(`.mapper-row[data-layer="${layer}"]`);
+    const selected = row.querySelectorAll('.mapper-chip.selected');
+    const resultEl = document.getElementById('result-' + layer);
+
+    if (selected.length === 0) {
+      resultEl.textContent = '—';
+      return;
+    }
+
+    hasSelections = true;
+    const tests = new Set();
+    selected.forEach(chip => {
+      chip.dataset.test.split(' + ').forEach(t => {
+        tests.add(t.trim());
+        totalTests.add(t.trim());
+      });
+    });
+
+    resultEl.innerHTML = Array.from(tests).map(t =>
+      '<span class="test-type">→ ' + t + '</span>'
+    ).join('');
+  });
+
+  // Summary
+  const summaryEl = document.getElementById('mapperSummary');
+  const contentEl = document.getElementById('summaryContent');
+
+  if (hasSelections) {
+    summaryEl.style.display = 'block';
+    const allTests = Array.from(totalTests);
+    contentEl.innerHTML =
+      '<div style="color:var(--gray-300); margin-bottom:8px;">Recommended test configuration:</div>' +
+      allTests.map(t => '&#x2713; ' + t).join('<br>') +
+      '<div style="margin-top:12px; color:var(--accent-cyan); font-weight:600;">' +
+      allTests.length + ' distinct test type' + (allTests.length > 1 ? 's' : '') +
+      ' across your AI stack</div>';
+  } else {
+    summaryEl.style.display = 'none';
+  }
+}
+</script>
+
+</body>
+</html>
