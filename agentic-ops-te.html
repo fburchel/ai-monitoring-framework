@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Operations with ThousandEyes</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --te-blue: #00B4D8;
+  --te-blue-dim: rgba(0,180,216,0.15);
+  --te-blue-glow: rgba(0,180,216,0.4);
+  --cisco-blue: #049FD9;
+  --cisco-blue-dim: rgba(4,159,217,0.15);
+  --te-dark: #060E1A;
+  --te-panel: #0B1A2E;
+  --te-card: #0F2340;
+  --te-card-hover: #132B4F;
+  --te-border: rgba(0,180,216,0.2);
+  --te-border-bright: rgba(0,180,216,0.5);
+  --white: #FFFFFF;
+  --gray-100: #E8ECF1;
+  --gray-300: #8FA0B5;
+  --gray-500: #5A6B7F;
+  --accent-green: #00B87C;
+  --accent-red: #E8364F;
+  --accent-orange: #F5A623;
+  --accent-purple: #7B61FF;
+  --accent-cyan: #00F0FF;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--te-dark);
+  color: var(--gray-100);
+  overflow-x: hidden;
+  line-height: 1.7;
+}
+
+/* Animated grid background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background:
+    linear-gradient(rgba(0,180,216,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,216,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 600px; height: 600px; top: -200px; right: -100px; background: rgba(0,180,216,0.07); animation: float 20s ease-in-out infinite; }
+.orb-2 { width: 400px; height: 400px; bottom: -100px; left: -100px; background: rgba(123,97,255,0.05); animation: float 25s ease-in-out infinite reverse; }
+.orb-3 { width: 300px; height: 300px; top: 60%; left: 40%; background: rgba(0,184,124,0.04); animation: float 18s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -30px); }
+  66% { transform: translate(-20px, 20px); }
+}
+
+/* ── Top Nav ── */
+.topnav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(6,14,26,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--te-border);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+
+.topnav-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--white);
+  letter-spacing: -0.3px;
+}
+
+.section-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.section-nav a {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.3s;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.section-nav a:hover { color: var(--gray-100); background: rgba(255,255,255,0.04); }
+.section-nav a.active { color: var(--te-blue); background: var(--te-blue-dim); }
+
+/* ── Main ── */
+.main {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 88px 32px 60px;
+}
+
+/* ── Section Base ── */
+.section {
+  margin-bottom: 100px;
+  scroll-margin-top: 72px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--te-blue);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+}
+
+.section h2 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--white);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.section-subtitle {
+  font-size: 15px;
+  color: var(--gray-300);
+  margin-bottom: 32px;
+  max-width: 720px;
+}
+
+.section p {
+  font-size: 15px;
+  color: var(--gray-300);
+  line-height: 1.8;
+  margin-bottom: 20px;
+  max-width: 720px;
+}
+
+.section p strong {
+  color: var(--gray-100);
+  font-weight: 600;
+}
+
+/* ── Hero / Opening ── */
+.hero {
+  text-align: center;
+  margin-bottom: 80px;
+  scroll-margin-top: 72px;
+}
+
+.hero h1 {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, var(--white) 0%, var(--te-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero > p {
+  font-size: 17px;
+  color: var(--gray-300);
+  max-width: 700px;
+  margin: 0 auto 48px;
+  line-height: 1.8;
+}
+
+/* ── Maturity Progression ── */
+.maturity-track {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.maturity-track::before {
+  content: '';
+  position: absolute;
+  top: 21px;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--te-blue-dim), var(--te-blue), var(--accent-cyan));
+  z-index: 0;
+}
+
+.maturity-stage {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  cursor: pointer;
+  padding: 12px 8px 20px;
+  transition: all 0.3s;
+}
+
+.maturity-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--te-panel);
+  border: 3px solid var(--te-blue);
+  margin: 0 auto 12px;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.maturity-dot::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  transition: all 0.3s;
+}
+
+.maturity-stage:hover .maturity-dot,
+.maturity-stage.active .maturity-dot {
+  background: var(--te-blue);
+  box-shadow: 0 0 16px var(--te-blue-glow);
+}
+
+.maturity-stage.active .maturity-dot::after {
+  border-color: var(--te-blue-dim);
+}
+
+.maturity-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gray-500);
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.maturity-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-300);
+  line-height: 1.4;
+  transition: color 0.3s;
+}
+
+.maturity-stage:hover .maturity-name,
+.maturity-stage.active .maturity-name {
+  color: var(--white);
+}
+
+.maturity-te-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--te-blue);
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+/* ── Architecture Diagram ── */
+.arch-diagram {
+  background: var(--te-dark);
+  border: 1px solid var(--te-border);
+  border-radius: 12px;
+  padding: 40px 32px;
+  margin: 32px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-diagram::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(0,180,216,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,216,0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+
+.arch-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.arch-flow-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.arch-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.node-box {
+  min-width: 120px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+  text-align: center;
+  line-height: 1.3;
+  border: 1px solid;
+  transition: all 0.3s;
+  cursor: default;
+  position: relative;
+}
+
+.node-box:hover {
+  transform: scale(1.04);
+}
+
+.node-box.human { background: rgba(0,180,216,0.12); border-color: rgba(0,180,216,0.4); }
+.node-box.ai { background: rgba(123,97,255,0.12); border-color: rgba(123,97,255,0.4); }
+.node-box.te { background: rgba(0,180,216,0.12); border-color: rgba(0,180,216,0.5); box-shadow: 0 0 20px rgba(0,180,216,0.1); }
+.node-box.infra { background: rgba(0,184,124,0.12); border-color: rgba(0,184,124,0.4); }
+.node-box.trigger { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.4); }
+.node-box.decision { background: rgba(232,54,79,0.12); border-color: rgba(232,54,79,0.4); }
+.node-box.cisco { background: rgba(4,159,217,0.12); border-color: rgba(4,159,217,0.4); }
+
+.node-label {
+  font-size: 10px;
+  color: var(--gray-500);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Node tooltip */
+.node-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--te-card);
+  border: 1px solid var(--te-border-bright);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: var(--gray-100);
+  line-height: 1.5;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.node-box:hover .node-tooltip {
+  opacity: 1;
+}
+
+/* Arrows */
+.arch-arrow {
+  width: 50px;
+  height: 2px;
+  position: relative;
+  margin: 0 6px;
+  display: flex;
+  align-items: center;
+}
+
+.arch-arrow-down {
+  width: 2px;
+  height: 40px;
+  position: relative;
+  margin: 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arch-arrow .line {
+  width: 100%;
+  height: 2px;
+  background: rgba(0,240,255,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-arrow .line::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -30px;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan));
+  animation: flowPulse 2s ease-in-out infinite;
+}
+
+.arch-arrow-down .line {
+  height: 100%;
+  width: 2px;
+  background: rgba(0,240,255,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-arrow-down .line::after {
+  content: '';
+  position: absolute;
+  left: 0; top: -30px;
+  width: 2px;
+  height: 30px;
+  background: linear-gradient(180deg, transparent, var(--accent-cyan));
+  animation: flowPulseDown 2s ease-in-out infinite;
+}
+
+.arch-arrow .dot {
+  position: absolute;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+.arch-arrow-down .dot {
+  position: absolute;
+  bottom: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+@keyframes flowPulse {
+  0% { left: -30px; opacity: 0; }
+  30% { opacity: 1; }
+  100% { left: calc(100% + 30px); opacity: 0; }
+}
+
+@keyframes flowPulseDown {
+  0% { top: -30px; opacity: 0; }
+  30% { opacity: 1; }
+  100% { top: calc(100% + 30px); opacity: 0; }
+}
+
+/* Bidirectional arrow */
+.arch-arrow-bidi .line::before {
+  content: '';
+  position: absolute;
+  top: 0; right: -30px;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(270deg, transparent, rgba(123,97,255,0.8));
+  animation: flowPulseReverse 2.5s ease-in-out infinite;
+}
+
+@keyframes flowPulseReverse {
+  0% { right: -30px; opacity: 0; }
+  30% { opacity: 1; }
+  100% { right: calc(100% + 30px); opacity: 0; }
+}
+
+/* ── Use Case Panel ── */
+.usecase-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--te-card);
+  border: 1px solid var(--te-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin: 24px 0 0;
+  width: 100%;
+}
+
+.usecase-toggle:hover {
+  border-color: var(--te-border-bright);
+  background: var(--te-card-hover);
+}
+
+.usecase-toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--te-blue);
+  flex: 1;
+}
+
+.usecase-toggle-arrow {
+  font-size: 12px;
+  color: var(--gray-500);
+  transition: transform 0.3s;
+}
+
+.usecase-toggle.open .usecase-toggle-arrow {
+  transform: rotate(180deg);
+}
+
+.usecase-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.usecase-content.open {
+  max-height: 600px;
+}
+
+.usecase-inner {
+  padding: 20px;
+  background: var(--te-panel);
+  border: 1px solid var(--te-border);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  font-size: 13.5px;
+  color: var(--gray-300);
+  line-height: 1.8;
+}
+
+/* ── Governance Sidebar ── */
+.governance-callout {
+  background: rgba(4,159,217,0.06);
+  border-left: 3px solid var(--cisco-blue);
+  border-radius: 0 10px 10px 0;
+  padding: 18px 20px;
+  margin: 28px 0;
+}
+
+.governance-callout-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cisco-blue);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.governance-callout p {
+  font-size: 13px;
+  color: var(--gray-300);
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+
+.governance-callout p strong {
+  color: var(--cisco-blue);
+}
+
+/* ── Key Points ── */
+.key-points {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 24px 0;
+}
+
+.key-point {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--gray-100);
+  line-height: 1.6;
+}
+
+.key-point-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--te-blue);
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+/* ── Monitoring Grid (Pillar 3) ── */
+.monitor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 28px 0;
+}
+
+.monitor-item {
+  background: var(--te-card);
+  border: 1px solid var(--te-border);
+  border-radius: 10px;
+  padding: 18px;
+  transition: all 0.3s;
+}
+
+.monitor-item:hover {
+  border-color: var(--te-border-bright);
+  transform: translateY(-2px);
+}
+
+.monitor-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.monitor-item-desc {
+  font-size: 12px;
+  color: var(--gray-300);
+  line-height: 1.6;
+}
+
+.monitor-item-test {
+  margin-top: 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--te-blue);
+  font-weight: 500;
+}
+
+/* ── Loop Diagram (Pillar 4) ── */
+.loop-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 28px 0;
+  position: relative;
+  padding-left: 28px;
+}
+
+.loop-steps::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--te-blue), var(--accent-green), var(--accent-orange), var(--accent-cyan));
+}
+
+.loop-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 0;
+  position: relative;
+}
+
+.loop-step-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid;
+  background: var(--te-dark);
+  position: absolute;
+  left: -28px;
+  top: 16px;
+  z-index: 1;
+}
+
+.loop-step:nth-child(1) .loop-step-dot { border-color: var(--te-blue); }
+.loop-step:nth-child(2) .loop-step-dot { border-color: var(--accent-purple); }
+.loop-step:nth-child(3) .loop-step-dot { border-color: var(--accent-orange); }
+.loop-step:nth-child(4) .loop-step-dot { border-color: var(--accent-green); }
+.loop-step:nth-child(5) .loop-step-dot { border-color: var(--accent-cyan); }
+
+.loop-step-content {
+  flex: 1;
+}
+
+.loop-step-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.loop-step-desc {
+  font-size: 13px;
+  color: var(--gray-300);
+  line-height: 1.6;
+}
+
+.loop-step-te {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--te-blue);
+  margin-top: 4px;
+}
+
+/* Human gate indicator */
+.human-gate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba(4,159,217,0.08);
+  border: 1px dashed rgba(4,159,217,0.35);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cisco-blue);
+  margin-top: 8px;
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 40px 32px;
+  border-top: 1px solid var(--te-border);
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .main { padding: 80px 20px 40px; }
+  .hero h1 { font-size: 28px; }
+  .section h2 { font-size: 24px; }
+  .monitor-grid { grid-template-columns: 1fr; }
+  .maturity-track { flex-direction: column; gap: 8px; }
+  .maturity-track::before { display: none; }
+  .arch-flow { flex-direction: column; gap: 8px; }
+  .arch-arrow { width: 2px; height: 30px; margin: 4px 0; transform: rotate(90deg); }
+  .section-nav { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Top Nav -->
+<nav class="topnav">
+  <span class="topnav-title">Agentic Operations with ThousandEyes</span>
+  <div class="section-nav" id="sectionNav">
+    <a href="#opening" class="active">Overview</a>
+    <a href="#pillar1">Data Plane</a>
+    <a href="#pillar2">Execution Plane</a>
+    <a href="#pillar3">Observability Plane</a>
+    <a href="#pillar4">Closed Loop</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- OPENING SECTION                        -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="hero" id="opening">
+    <h1>The Shift to Agentic Operations</h1>
+    <p>Traditional monitoring assumes a human reads dashboards and takes action. Agentic operations introduce autonomous decision-making: agents query, interpret, and act without human intervention. ThousandEyes sits at the center of this shift as the data source agents consume, the execution engine agents drive, and the observability layer that monitors the agents themselves.</p>
+
+    <!-- Maturity Progression -->
+    <div class="maturity-track">
+      <div class="maturity-stage active" onclick="scrollToPillar('pillar1')">
+        <div class="maturity-dot"></div>
+        <div class="maturity-num">Pillar 1</div>
+        <div class="maturity-name">Human + AI Client</div>
+      </div>
+      <div class="maturity-stage" onclick="scrollToPillar('pillar2')">
+        <div class="maturity-dot"></div>
+        <div class="maturity-num">Pillar 2</div>
+        <div class="maturity-name">Autonomous Agents</div>
+      </div>
+      <div class="maturity-stage" onclick="scrollToPillar('pillar3')">
+        <div class="maturity-dot"></div>
+        <div class="maturity-num">Pillar 3</div>
+        <div class="maturity-name">Stack Monitoring</div>
+      </div>
+      <div class="maturity-stage" onclick="scrollToPillar('pillar4')">
+        <div class="maturity-dot"></div>
+        <div class="maturity-num">Pillar 4</div>
+        <div class="maturity-name">Closed-Loop Ops</div>
+      </div>
+    </div>
+    <div class="maturity-te-label">ThousandEyes: the constant across all four pillars</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PILLAR 1: Human + AI Client            -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section" id="pillar1">
+    <div class="section-label">Pillar 1 — ThousandEyes as Data Plane</div>
+    <h2>Human + AI Client</h2>
+    <div class="section-subtitle">Scaling Human Decision-Making with AI-Assisted Observability</div>
+
+    <p>A human operator uses an AI client — Claude, Copilot, or an internal tool — to accelerate their workflow. ThousandEyes serves dual roles: the AI client queries ThousandEyes data to provide context, analysis, and recommendations to the human, and ThousandEyes feeds the AI client with real-time network and application intelligence.</p>
+
+    <div class="key-points">
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>The human remains in the loop.</strong> AI augments decision-making, it does not replace it. The operator retains full authority over remediation actions.</span></div>
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>On-demand data retrieval.</strong> The AI client can pull ThousandEyes test results, alert data, path visualization, and BGP/DNS intelligence on demand via MCP.</span></div>
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>Active test execution.</strong> The human can instruct the AI client to run instant tests, create new monitors, or correlate events across ThousandEyes views.</span></div>
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>Collapsed mean time to innocence.</strong> The operator gets synthesized answers in seconds instead of manually pivoting across multiple dashboards.</span></div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="arch-diagram">
+      <div class="arch-flow">
+        <div class="arch-node">
+          <div class="node-box human">Human Operator
+            <div class="node-tooltip">Network engineer, SRE, or SE on a live troubleshooting call</div>
+          </div>
+          <div class="node-label">Decision Authority</div>
+        </div>
+        <div class="arch-arrow arch-arrow-bidi"><div class="line"></div></div>
+        <div class="arch-node">
+          <div class="node-box ai">AI Client
+            <div class="node-tooltip">Claude, Copilot, or internal AI assistant querying TE data</div>
+          </div>
+          <div class="node-label">Claude / Copilot</div>
+        </div>
+        <div class="arch-arrow arch-arrow-bidi"><div class="line"></div></div>
+        <div class="arch-node">
+          <div class="node-box te">ThousandEyes MCP
+            <div class="node-tooltip">MCP server exposing TE test results, alerts, path viz, and instant test execution</div>
+          </div>
+          <div class="node-label">Data + Control</div>
+        </div>
+        <div class="arch-arrow"><div class="line"></div><div class="dot"></div></div>
+        <div class="arch-node">
+          <div class="node-box infra">Network / App
+            <div class="node-tooltip">The monitored infrastructure: SaaS endpoints, ISP paths, DNS, BGP routes</div>
+          </div>
+          <div class="node-label">Monitored Infra</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="governance-callout">
+      <div class="governance-callout-title">Trust and Governance</div>
+      <p><strong>Audit trail:</strong> Every MCP tool call is logged — what data was queried, what tests were run, when. <strong>Scoped access:</strong> MCP server permissions limit what the AI client can do within ThousandEyes. The human operator provides the judgment layer.</p>
+    </div>
+
+    <!-- Use Case -->
+    <div class="usecase-toggle" onclick="toggleUseCase(this)">
+      <span class="usecase-toggle-label">Use-Case Scenario: Live Troubleshooting Call</span>
+      <span class="usecase-toggle-arrow">&#x25BC;</span>
+    </div>
+    <div class="usecase-content">
+      <div class="usecase-inner">
+        An SE or network engineer is on a live troubleshooting call. They ask their AI client: "Show me the HTTP server test results for the customer's SaaS app over the last 4 hours and correlate with any BGP route changes." The AI client queries ThousandEyes via MCP, synthesizes the data, and presents a plain-language summary with the relevant path visualization context. The engineer shares findings in real time without leaving the conversation.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PILLAR 2: Autonomous Agents + MCP      -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section" id="pillar2">
+    <div class="section-label">Pillar 2 — ThousandEyes as Execution Plane</div>
+    <h2>Autonomous Agents + MCP Server</h2>
+    <div class="section-subtitle">AI Agents Driving Synthetic Testing and Data Retrieval Autonomously</div>
+
+    <p>AI agents operate without direct human prompting. They use the ThousandEyes MCP server to retrieve observability data and execute synthetic tests as part of accomplishing a broader goal: deployment validation, incident response, capacity planning.</p>
+
+    <div class="key-points">
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>No human in the loop at execution time.</strong> Agents connect to ThousandEyes MCP server as a tool in their toolchain and act autonomously.</span></div>
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>Autonomous test execution.</strong> Agents can create and run instant tests (HTTP, network, DNS) and retrieve and interpret results, path data, alert states, and endpoint metrics.</span></div>
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>Event-driven automation.</strong> A CI/CD pipeline triggers an agent, the agent runs ThousandEyes tests against the deployment target, validates connectivity and performance, and proceeds or rolls back based on results.</span></div>
+      <div class="key-point"><span class="key-point-dot"></span><span><strong>Concurrent agent operation.</strong> Multiple agents can operate simultaneously, each with scoped access to ThousandEyes capabilities.</span></div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="arch-diagram">
+      <div class="arch-flow-vertical">
+        <div class="arch-node">
+          <div class="node-box trigger">Event Trigger
+            <div class="node-tooltip">CI/CD pipeline push, alert webhook, scheduled cron, or external event</div>
+          </div>
+          <div class="node-label">CI/CD / Alert / Schedule</div>
+        </div>
+        <div class="arch-arrow-down"><div class="line"></div><div class="dot"></div></div>
+        <div class="arch-node">
+          <div class="node-box ai" style="min-width:160px;">AI Agent (Autonomous)
+            <div class="node-tooltip">Autonomous agent with scoped MCP access — no human prompt required</div>
+          </div>
+          <div class="node-label">Decision + Execution</div>
+        </div>
+        <div class="arch-arrow-down"><div class="line"></div><div class="dot"></div></div>
+        <div class="arch-node">
+          <div class="node-box te" style="min-width:180px;">ThousandEyes MCP Server
+            <div class="node-tooltip">Instant tests, scheduled test results, path viz, alert data, endpoint metrics</div>
+          </div>
+          <div class="node-label">Test Execution + Data Retrieval</div>
+        </div>
+        <div class="arch-arrow-down"><div class="line"></div><div class="dot"></div></div>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+          <div class="arch-node">
+            <div class="node-box infra" style="min-width:100px;">Instant Tests
+              <div class="node-tooltip">HTTP Server, Network, DNS, Agent-to-Agent tests on demand</div>
+            </div>
+          </div>
+          <div class="arch-node">
+            <div class="node-box infra" style="min-width:100px;">Data Retrieval
+              <div class="node-tooltip">Test results, path visualization, BGP routes, alert states</div>
+            </div>
+          </div>
+        </div>
+        <div class="arch-arrow-down"><div class="line"></div><div class="dot"></div></div>
+        <div class="arch-node">
+          <div class="node-box decision">Agent Decision
+            <div class="node-tooltip">Proceed with deployment, trigger rollback, or escalate to human</div>
+          </div>
+          <div class="node-label">Proceed / Rollback / Escalate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="governance-callout">
+      <div class="governance-callout-title">Trust and Governance</div>
+      <p><strong>Scoped MCP permissions:</strong> Each agent gets the minimum ThousandEyes access it needs — read-only data retrieval, or test creation within specific account groups. <strong>Cisco AI Defense</strong> can validate agent actions against policy before execution. <strong>Human approval gates</strong> can be inserted for high-risk actions like test deletion or configuration changes.</p>
+    </div>
+
+    <div class="usecase-toggle" onclick="toggleUseCase(this)">
+      <span class="usecase-toggle-label">Use-Case Scenario: Deployment Validation Pipeline</span>
+      <span class="usecase-toggle-arrow">&#x25BC;</span>
+    </div>
+    <div class="usecase-content">
+      <div class="usecase-inner">
+        A deployment pipeline triggers an AI agent when a new microservice version is pushed to production. The agent uses the ThousandEyes MCP server to: (1) run instant HTTP server tests against the new endpoints, (2) pull path visualization data to confirm no routing anomalies exist between the CDN edge and origin, (3) compare latency and availability metrics against the pre-deployment baseline. If metrics are within threshold, the agent greenlights the deployment. If not, it triggers a rollback and opens an incident ticket with the ThousandEyes data attached.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PILLAR 3: Monitoring the Agent Stack   -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section" id="pillar3">
+    <div class="section-label">Pillar 3 — ThousandEyes as Observability Plane</div>
+    <h2>Monitoring the Agent Stack</h2>
+    <div class="section-subtitle">Using ThousandEyes to Monitor the AI Pipeline and Toolchain</div>
+
+    <p>AI agents depend on a stack of services: LLM APIs, MCP servers, vector databases, API gateways, AI guardrails, and orchestration layers. Every one of these is critical infrastructure. ThousandEyes monitors them all.</p>
+
+    <div class="monitor-grid">
+      <div class="monitor-item">
+        <div class="monitor-item-title">LLM API Endpoints</div>
+        <div class="monitor-item-desc">HTTP server tests against inference endpoints. Track latency, availability, error rates, and rate limiting behavior across Anthropic, OpenAI, and Bedrock.</div>
+        <div class="monitor-item-test">HTTP Server + Path Analysis</div>
+      </div>
+      <div class="monitor-item">
+        <div class="monitor-item-title">MCP Servers</div>
+        <div class="monitor-item-desc">Transaction tests validating tool call execution and response integrity. Confirm the MCP server is responding correctly to agent requests.</div>
+        <div class="monitor-item-test">Transaction Test</div>
+      </div>
+      <div class="monitor-item">
+        <div class="monitor-item-title">Vector Databases</div>
+        <div class="monitor-item-desc">Synthetic tests against embedding and query endpoints. Monitor Pinecone, Weaviate, or pgvector upsert/query operations for latency and availability.</div>
+        <div class="monitor-item-test">HTTP Server to API</div>
+      </div>
+      <div class="monitor-item">
+        <div class="monitor-item-title">API Gateways</div>
+        <div class="monitor-item-desc">LiteLLM or equivalent gateway health. Verify routing correctness, load balancing, and failover behavior under model-switching conditions.</div>
+        <div class="monitor-item-test">HTTP Server + Transaction</div>
+      </div>
+      <div class="monitor-item">
+        <div class="monitor-item-title">Cisco AI Defense</div>
+        <div class="monitor-item-desc">Guardrail layer availability and response latency. Ensure content safety processing does not become a bottleneck in the agent pipeline.</div>
+        <div class="monitor-item-test">HTTP Server</div>
+      </div>
+      <div class="monitor-item">
+        <div class="monitor-item-title">End-to-End Pipeline</div>
+        <div class="monitor-item-desc">Transaction tests that simulate a full agent workflow: prompt to LLM call to tool use to response. Measure total pipeline health as a single metric.</div>
+        <div class="monitor-item-test">Transaction Test (E2E)</div>
+      </div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="arch-diagram">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div class="node-box te" style="display:inline-flex; min-width:240px;">ThousandEyes Monitoring Layer</div>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+        <div class="node-box ai" style="min-width:auto; padding:10px 14px; font-size:11px;">LLM API<br><span style="font-size:9px;opacity:0.6;">Anthropic / OpenAI</span></div>
+        <div class="node-box te" style="min-width:auto; padding:10px 14px; font-size:11px;">MCP Server</div>
+        <div class="node-box infra" style="min-width:auto; padding:10px 14px; font-size:11px;">Vector DB<br><span style="font-size:9px;opacity:0.6;">Pinecone</span></div>
+        <div class="node-box trigger" style="min-width:auto; padding:10px 14px; font-size:11px;">API Gateway<br><span style="font-size:9px;opacity:0.6;">LiteLLM</span></div>
+        <div class="node-box cisco" style="min-width:auto; padding:10px 14px; font-size:11px;">Cisco AI Defense</div>
+        <div class="node-box decision" style="min-width:auto; padding:10px 14px; font-size:11px;">Agent Pipeline<br><span style="font-size:9px;opacity:0.6;">E2E Transaction</span></div>
+      </div>
+    </div>
+
+    <div class="governance-callout">
+      <div class="governance-callout-title">Trust and Governance</div>
+      <p><strong>Observability of observability:</strong> ThousandEyes monitoring its own MCP server and agent integrations creates recursive trust verification. If the monitoring layer itself degrades, you know immediately. <strong>Cisco AI Defense</strong> is monitored as critical infrastructure — guardrail downtime is surfaced as a priority alert.</p>
+    </div>
+
+    <div class="usecase-toggle" onclick="toggleUseCase(this)">
+      <span class="usecase-toggle-label">Use-Case Scenario: Enterprise AI Support Fleet</span>
+      <span class="usecase-toggle-arrow">&#x25BC;</span>
+    </div>
+    <div class="usecase-content">
+      <div class="usecase-inner">
+        An enterprise runs a fleet of AI agents handling customer support escalations. Each agent calls Claude via LiteLLM, retrieves customer context from Pinecone, and routes through Cisco AI Defense for content safety. ThousandEyes runs scheduled transaction tests against each component: LLM API latency and error rate, Pinecone query response time, AI Defense processing latency, and end-to-end agent response time. When Pinecone query latency spikes, ThousandEyes alerts fire before customers experience degraded agent responses. The ops team remediates proactively.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- PILLAR 4: Closed-Loop Operations       -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="section" id="pillar4">
+    <div class="section-label">Pillar 4 — Convergence</div>
+    <h2>Closed-Loop Agentic Operations</h2>
+    <div class="section-subtitle">Detection, Remediation, Validation — All Agent-Driven</div>
+
+    <p>This is the convergence of Pillars 1 through 3. An AI agent detects a problem via ThousandEyes data, takes a remediation action, and then uses ThousandEyes again to validate the fix. The loop closes without human intervention — or with human approval gates inserted at any stage for high-risk actions.</p>
+
+    <p>This is the highest maturity level. It requires trust in agent decision-making, robust guardrails, and comprehensive observability. ThousandEyes provides both the detection signal and the validation signal.</p>
+
+    <div class="loop-steps">
+      <div class="loop-step">
+        <div class="loop-step-dot"></div>
+        <div class="loop-step-content">
+          <div class="loop-step-title">Detect</div>
+          <div class="loop-step-desc">ThousandEyes detects degradation: increased packet loss, latency spike, availability drop, BGP route anomaly.</div>
+          <div class="loop-step-te">ThousandEyes Alert Trigger</div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-dot"></div>
+        <div class="loop-step-content">
+          <div class="loop-step-title">Diagnose</div>
+          <div class="loop-step-desc">AI agent receives the alert and queries ThousandEyes for path visualization, BGP data, and test history. Identifies the offending transit provider hop or configuration.</div>
+          <div class="loop-step-te">Path Viz + BGP + Test History via MCP</div>
+          <div class="human-gate">Optional: Human approval gate</div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-dot"></div>
+        <div class="loop-step-content">
+          <div class="loop-step-title">Remediate</div>
+          <div class="loop-step-desc">Agent executes the fix: adjusts traffic routing via SD-WAN policy, triggers a DNS failover, or opens a ticket with the ISP including ThousandEyes evidence.</div>
+          <div class="loop-step-te">SD-WAN / DNS / ITSM Integration</div>
+          <div class="human-gate">Optional: Human approval gate</div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-dot"></div>
+        <div class="loop-step-content">
+          <div class="loop-step-title">Validate</div>
+          <div class="loop-step-desc">Agent runs a follow-up ThousandEyes instant test to confirm the path has improved and the degradation has resolved.</div>
+          <div class="loop-step-te">ThousandEyes Instant Test via MCP</div>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-step-dot"></div>
+        <div class="loop-step-content">
+          <div class="loop-step-title">Report</div>
+          <div class="loop-step-desc">Agent generates a before/after summary with ThousandEyes data and posts it to the incident channel. Full audit trail preserved.</div>
+          <div class="loop-step-te">Automated Incident Report</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="governance-callout">
+      <div class="governance-callout-title">Trust and Governance</div>
+      <p><strong>Human approval gates</strong> are configurable insertion points at any stage. High-risk actions — routing changes, DNS modifications, production rollbacks — can require human sign-off before execution. <strong>Cisco AI Defense</strong> validates agent actions against organizational policy. <strong>ThousandEyes provides the audit trail:</strong> what the agent detected, what data it consumed, what action it took, and whether the validation confirmed resolution.</p>
+    </div>
+
+    <div class="usecase-toggle" onclick="toggleUseCase(this)">
+      <span class="usecase-toggle-label">Use-Case Scenario: Autonomous Path Remediation</span>
+      <span class="usecase-toggle-arrow">&#x25BC;</span>
+    </div>
+    <div class="usecase-content">
+      <div class="usecase-inner">
+        ThousandEyes detects increased packet loss on a path between an enterprise data center and a SaaS provider. An AI agent receives the alert, queries ThousandEyes for path visualization and BGP data, identifies the offending transit provider hop, adjusts traffic routing via SD-WAN policy, then runs a follow-up ThousandEyes instant test to confirm the path has improved. The agent generates a summary report with before/after ThousandEyes data and posts it to the incident channel.
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    Agentic Operations with ThousandEyes
+  </footer>
+
+</div>
+
+<script>
+// ── Smooth scroll to pillar ──
+function scrollToPillar(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Section nav highlighting on scroll ──
+const sections = document.querySelectorAll('.section, .hero');
+const navLinks = document.querySelectorAll('.section-nav a');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+      });
+      // Update maturity dots
+      document.querySelectorAll('.maturity-stage').forEach(stage => {
+        stage.classList.remove('active');
+      });
+      const pillarMap = { pillar1: 0, pillar2: 1, pillar3: 2, pillar4: 3 };
+      if (pillarMap[id] !== undefined) {
+        document.querySelectorAll('.maturity-stage')[pillarMap[id]].classList.add('active');
+      }
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-80px 0px -40% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// ── Smooth scroll for nav links ──
+navLinks.forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// ── Use case toggle ──
+function toggleUseCase(toggle) {
+  toggle.classList.toggle('open');
+  const content = toggle.nextElementSibling;
+  content.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
